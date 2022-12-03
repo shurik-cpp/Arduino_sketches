@@ -10,7 +10,7 @@ enum PinsDefine {
 
 const float temp_heating_on = 15.0;
 const float temp_heating_off = 20.0;
-const uint32_t relay_delay_millis = 1800000; // 30 минут
+const uint32_t relay_delay_millis = Time::SEC_5;//1800000; // 30 минут
 const int SERIAL_SPEED = 9600;
 
 enum SensorResolution {
@@ -99,6 +99,24 @@ void loop() {
 		PrintRelayStatus(relay_status);
 	}
 	digitalWrite(PinsDefine::RELAY_PIN, relay_status);
+	
+	if (!relay_status) {
+		static TimeManager blink_timer(Time::SEC_0_1);
+		static TimeManager blink_wait_timer(Time::SEC_1);
+		static bool is_blink = false;
+		if (is_blink && blink_timer.IsReady()) {
+			is_blink = false;
+			blink_wait_timer.ResetTimer();
+		}
+		if (!is_blink && blink_wait_timer.IsReady()) {
+			is_blink = true;
+			blink_timer.ResetTimer();
+		}
+		digitalWrite(PinsDefine::LED, is_blink);
+	}
+	else {
+		digitalWrite(PinsDefine::LED, HIGH);
+	}
 
 }
 
