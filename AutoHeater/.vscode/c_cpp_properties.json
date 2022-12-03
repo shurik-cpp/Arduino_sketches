@@ -17,11 +17,13 @@
             "includePath": [
                 "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/cores/arduino",
                 "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/variants/eightanaloginputs",
+                "/home/shurik/Arduino/libraries/DallasTemperature",
+                "/home/shurik/Arduino/libraries/OneWire",
+                "/home/shurik/Arduino/libraries/TimeManager/src",
+                "/home/shurik/Arduino/libraries/Trigger/src",
                 "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/lib/gcc/avr/7.3.0/include",
                 "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/lib/gcc/avr/7.3.0/include-fixed",
-                "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/avr/include",
-                "/home/shurik/Arduino/libraries/**",
-                "${workspaceFolder}/libraries/**"
+                "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/avr/include"
             ],
             "forcedInclude": [
                 "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/cores/arduino/Arduino.h"
