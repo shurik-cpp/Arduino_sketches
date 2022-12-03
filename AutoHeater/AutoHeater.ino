@@ -11,12 +11,13 @@ namespace Setup
 	};
 	namespace Timers {
 		const Time LED_BLINK = Time::SEC_0_1;		// длительность свечения светодиода в режиме мигания
-		const Time LED_WAIT_SENSOR = Time::SEC_1; 	// задержка между мигинием светодиода когда нет датчика температуры
-		const Time LED_WAIT_RELAY = Time::SEC_5;	// задержка между мигинием светодиода когда есть датчик температуры и реле выключено
+		const Time LED_WAIT_WITHOUT_SENSOR = Time::SEC_1; 	// задержка между мигинием светодиода когда нет датчика температуры
+		const Time LED_WAIT_NOT_COLD = Time::SEC_5;	// задержка между мигинием светодиода когда есть датчик температуры и реле выключено
+		const Time LED_WAIT_COLD = Time::SEC_0_3;	// задержка между мигинием светодиода когда холодно (сработало по temp_heating_on) и реле выключено
 		const Time PRINT_DOT = Time::SEC_0_2;		// как часто печатать точки во время ожидания преобразования температуры
-		const int SENSOR_RESEARCH = Time::SEC_3;	// период поиска датчика, если был не обнаружен или отвалился
+		const Time SENSOR_RESEARCH = Time::SEC_3;	// период поиска датчика, если был не обнаружен или отвалился
 		const Time SENSOR_TICK = Time::SEC_1;		// период опроса датчика температуры
-		const Time RELAY = Time::SEC_10;			// период вкл/выкл реле (30 минут == 1800000)
+		const uint32_t RELAY = 1800000;					// период вкл/выкл реле (30 минут == 1800000)
 	}
 
 	const int SERIAL_SPEED = 9600;
@@ -72,7 +73,8 @@ void setup() {
 }
 
 void loop() {
-	static bool relay_status = false;
+	static bool is_cold = false; // true - когда реле сработало по temp_heating_on, false - когда выключено по temp_heating_off
+	static bool relay_status = is_cold;
 	const bool is_sensor_enable = static_cast<int>(temperature) != DEVICE_DISCONNECTED_C;
 	
 	if (!is_sensor_enable && sensor_research_timer.IsReady()) {
@@ -82,13 +84,16 @@ void loop() {
 		temperature = sensor.getTempCByIndex(0);
 		sensor.requestTemperatures();
 	}
-	
+
+// Логика работы с датчиком температуры
 	if (is_sensor_enable) {
 		const bool on_by_temp = !relay_status && temperature < Setup::temp_heating_on;
 		static Trigger on_by_temp_trig;
 		
 		if (on_by_temp_trig.IsRisingFront(on_by_temp)) {
 			relay_status = true;
+			is_cold = true;
+			Serial.println("Cold!");
 			PrintRelayStatus(relay_status);
 			PrintTemperature();
 			relay_timer.ResetTimer();
@@ -96,34 +101,60 @@ void loop() {
 	
 		const bool off_by_temp = temperature > Setup::temp_heating_off;
 		if (off_by_temp) {
+			is_cold = false;
 			relay_status = false;
 			relay_timer.ResetTimer();
 		}
 		static Trigger off_by_temp_trig;
 		if (off_by_temp_trig.IsRisingFront(off_by_temp)) {
 			PrintRelayStatus(relay_status);
+			Serial.println("Not cold");
 			PrintTemperature();
 		}
 	}
+	else {
+		is_cold = false;
+	}
 
+// Работа реле
 	if (relay_timer.IsReady()) {
-		relay_status = !relay_status;
+		if (!is_sensor_enable || (is_sensor_enable && is_cold)) {
+			relay_status = !relay_status;
+		}
 		PrintRelayStatus(relay_status);
 		PrintTemperature();
 	}
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, relay_status);
 	
-	
-	if (!relay_status && is_sensor_enable) {
-		LedBlink(Setup::Timers::LED_WAIT_RELAY);
-	}
-	else if (!relay_status && !is_sensor_enable) {
-		LedBlink(Setup::Timers::LED_WAIT_SENSOR);
-	}
+// Работа светодиода
+	uint8_t led_mode = 0;
+	if (relay_status)
+		led_mode = 0;
 	else {
-		digitalWrite(Setup::PinsDefine::LED, HIGH);
+		if (is_sensor_enable)
+			if (is_cold) 
+				led_mode = 3;
+			else 
+				led_mode = 2;
+		else {
+			led_mode = 1;
+		}
 	}
 
+	switch (led_mode) {
+	case 0:
+		digitalWrite(Setup::PinsDefine::LED, relay_status);
+		break;
+	case 1:
+		LedBlink(Setup::Timers::LED_WAIT_WITHOUT_SENSOR);
+		break;
+	case 2:
+		LedBlink(Setup::Timers::LED_WAIT_NOT_COLD);
+		break;
+	case 3:
+		LedBlink(Setup::Timers::LED_WAIT_COLD);
+		break;
+	}
 }
 
 void SensorSearch() {
