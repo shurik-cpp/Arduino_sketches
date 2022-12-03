@@ -14,7 +14,7 @@ namespace Setup
 		const Time LED_WAIT_SENSOR = Time::SEC_1; 	// задержка между мигинием светодиода когда нет датчика температуры
 		const Time LED_WAIT_RELAY = Time::SEC_5;	// задержка между мигинием светодиода когда есть датчик температуры и реле выключено
 		const Time PRINT_DOT = Time::SEC_0_2;		// как часто печатать точки во время ожидания преобразования температуры
-		const int SENSOR_RESEARCH = 60000;			// период поиска датчика, если был не обнаружен или отвалился
+		const int SENSOR_RESEARCH = Time::SEC_3;	// период поиска датчика, если был не обнаружен или отвалился
 		const Time SENSOR_TICK = Time::SEC_1;		// период опроса датчика температуры
 		const Time RELAY = Time::SEC_10;			// период вкл/выкл реле (30 минут == 1800000)
 	}
@@ -109,6 +109,7 @@ void loop() {
 	if (relay_timer.IsReady()) {
 		relay_status = !relay_status;
 		PrintRelayStatus(relay_status);
+		PrintTemperature();
 	}
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, relay_status);
 	
@@ -145,12 +146,12 @@ void PrintSensorAddress() {
 	sensor.getAddress(address, 0);
 	Serial.println("Sensor found! :)");
 	Serial.print("DS18B20 address: ");
+	String addr_str;
 	for (uint8_t i = 0; i < 8; ++i) {
-		Serial.print("0x");
-		if (address[i] < 0x10) Serial.print("0");
-		Serial.print(address[i], HEX);
+		// делаем адрес в строковом представлении
+		addr_str += address[i] < 16 ? "00" : String(address[i], HEX);
 	}
-	Serial.println("");
+	Serial.println(addr_str);
 }
 
 void PrintRelayStatus(const bool status) {
@@ -169,13 +170,13 @@ void FirstReadTemperature() {
 			Serial.print('.');
 		}
 	}
+	Serial.println("");
 	temperature = sensor.getTempCByIndex(0);
 	sensor.requestTemperatures();
 	sensor_tick_timer.ResetTimer();
 	
 }
 void PrintTemperature() {
-	Serial.println("");
 	Serial.print("Temperature: ");
 	Serial.println(temperature);
 }
