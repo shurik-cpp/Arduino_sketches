@@ -10,13 +10,13 @@ namespace Setup
 		LED = 13
 	};
 	namespace Timers {
-		const Time LED_BLINK = Time::SEC_0_1;
-		const Time LED_WAIT_SENSOR = Time::SEC_1;
-		const Time LED_WAIT_RELAY = Time::SEC_5;
-		const Time PRINT_DOT = Time::SEC_0_2;
-		const int SENSOR_RESEARCH = 10000;//Time::SEC_1;
-		const Time SENSOR_TICK = Time::SEC_1;
-		const Time RELAY = Time::SEC_5;//1800000; // 30 минут
+		const Time LED_BLINK = Time::SEC_0_1;		// длительность свечения светодиода в режиме мигания
+		const Time LED_WAIT_SENSOR = Time::SEC_1; 	// задержка между мигинием светодиода когда нет датчика температуры
+		const Time LED_WAIT_RELAY = Time::SEC_5;	// задержка между мигинием светодиода когда есть датчик температуры и реле выключено
+		const Time PRINT_DOT = Time::SEC_0_2;		// как часто печатать точки во время ожидания преобразования температуры
+		const int SENSOR_RESEARCH = 60000;			// период поиска датчика, если был не обнаружен или отвалился
+		const Time SENSOR_TICK = Time::SEC_1;		// период опроса датчика температуры
+		const Time RELAY = Time::SEC_10;			// период вкл/выкл реле (30 минут == 1800000)
 	}
 
 	const int SERIAL_SPEED = 9600;
