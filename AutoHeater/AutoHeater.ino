@@ -5,6 +5,7 @@
 namespace Setup 
 {
 	enum PinsDefine {
+		SENSOR_VCC = 2,
 		ONE_WIRE_PIN = 7,
 		RELAY_PIN = 8,
 		LED = 13
@@ -17,7 +18,7 @@ namespace Setup
 		const Time PRINT_DOT = Time::SEC_0_2;		// как часто печатать точки во время ожидания преобразования температуры
 		const Time SENSOR_RESEARCH = Time::SEC_3;	// период поиска датчика, если был не обнаружен или отвалился
 		const Time SENSOR_TICK = Time::SEC_1;		// период опроса датчика температуры
-		const uint32_t RELAY = 1800000;					// период вкл/выкл реле (30 минут == 1800000)
+		const uint32_t RELAY = 1200000;				// период вкл/выкл реле (20 минут == 1200000)
 	}
 
 	const int SERIAL_SPEED = 9600;
@@ -51,7 +52,9 @@ void setup() {
 	Serial.begin(Setup::SERIAL_SPEED);
 	pinMode(Setup::PinsDefine::RELAY_PIN, OUTPUT);
 	pinMode(Setup::PinsDefine::LED, OUTPUT);
-	digitalWrite(Setup::PinsDefine::RELAY_PIN, LOW);
+	digitalWrite(Setup::PinsDefine::RELAY_PIN, HIGH);
+	pinMode(Setup::PinsDefine::SENSOR_VCC, OUTPUT);
+	digitalWrite(Setup::PinsDefine::SENSOR_VCC, HIGH);
 
 	SensorSearch();	
 	if (sensor.getDS18Count()) {
@@ -87,7 +90,7 @@ void loop() {
 
 // Логика работы с датчиком температуры
 	if (is_sensor_enable) {
-		const bool on_by_temp = !relay_status && temperature < Setup::temp_heating_on;
+		const bool on_by_temp = temperature < Setup::temp_heating_on;
 		static Trigger on_by_temp_trig;
 		
 		if (on_by_temp_trig.IsRisingFront(on_by_temp)) {
@@ -124,7 +127,7 @@ void loop() {
 		PrintRelayStatus(relay_status);
 		PrintTemperature();
 	}
-	digitalWrite(Setup::PinsDefine::RELAY_PIN, relay_status);
+	digitalWrite(Setup::PinsDefine::RELAY_PIN, !relay_status);
 	
 // Работа светодиода
 	uint8_t led_mode = 0;
