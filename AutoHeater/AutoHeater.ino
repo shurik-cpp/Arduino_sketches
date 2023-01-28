@@ -8,6 +8,7 @@ namespace Setup
 		SENSOR_VCC = 2,
 		ONE_WIRE_PIN = 7,
 		RELAY_PIN = 8,
+		RELAY_TRIAC_PIN = 9,
 		LED = 13
 	};
 	namespace Timers {
@@ -51,8 +52,10 @@ void LedBlink(const Time wait);
 void setup() {
 	Serial.begin(Setup::SERIAL_SPEED);
 	pinMode(Setup::PinsDefine::RELAY_PIN, OUTPUT);
+	pinMode(Setup::PinsDefine::RELAY_TRIAC_PIN, OUTPUT);
 	pinMode(Setup::PinsDefine::LED, OUTPUT);
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, HIGH);
+	digitalWrite(Setup::PinsDefine::RELAY_TRIAC_PIN, LOW);
 	pinMode(Setup::PinsDefine::SENSOR_VCC, OUTPUT);
 	digitalWrite(Setup::PinsDefine::SENSOR_VCC, HIGH);
 
@@ -128,6 +131,7 @@ void loop() {
 		PrintTemperature();
 	}
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, !relay_status);
+	digitalWrite(Setup::PinsDefine::RELAY_TRIAC_PIN, relay_status);
 	
 // Работа светодиода
 	uint8_t led_mode = 0;
