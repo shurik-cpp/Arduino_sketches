@@ -29,7 +29,7 @@ RotaryRuler::RotaryRuler(const uint8_t yellowWire, const uint8_t greenWire, cons
 {
 	RullerInterrupt::_yellowWire = yellowWire;
 	RullerInterrupt::_greenWire = greenWire;
-		// setPinsMode
+	// setPinsMode
 	pinMode(RullerInterrupt::_yellowWire, INPUT);
 	pinMode(RullerInterrupt::_greenWire, INPUT);
 	// turn on pullup resistors
@@ -107,4 +107,8 @@ void RotaryRuler::setReverse(const bool value) {
 	setInterrupts(false);
 	RullerInterrupt::_isReverse = value;
 	setInterrupts(true);
+}
+
+bool RotaryRuler::getReverseMode() const {
+    return RullerInterrupt::_isReverse;
 }

@@ -17,9 +17,12 @@ public:
 	~RotaryRuler() = default;
 
 	void setReverse(const bool value);
+	bool getReverseMode() const;
 	void setResolution(const uint16_t resolution) { _resolution = resolution; }
+	uint16_t getResolution() const { return _resolution; }
 	void setDiameter(const float diameter) { _diameter = diameter; }
 	float getDiameter() { return _diameter; }
+
 	void resetMeasurement();
 	bool isDistanseChanged();
 	int32_t getEncoderTickCounter() const;
