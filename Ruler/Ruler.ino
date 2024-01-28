@@ -11,7 +11,6 @@ RotaryRuler ruler(ENC_YELLOW_WIRE, ENC_GREEN_WIRE, ENC_RESOLUTION);
 
 void setup() {
 	Serial.begin(9600);
-	ruler.init();
 	ruler.setDiameter(diameter_mm);
 	ruler.setReverse(true);
 }
@@ -21,6 +20,7 @@ void loop() {
 
 	if (ruler.isDistanseChanged()) {
 		Serial.print(ruler.getDistance(), 3);
+		// Serial.println(" mm"); 
 		Serial.print(" mm, inc: "); Serial.print(ruler.isIncremented());
 		Serial.print(", dec: "); Serial.println(ruler.isDecremented());
 	}

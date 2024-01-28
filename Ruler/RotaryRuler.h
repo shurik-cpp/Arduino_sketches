@@ -12,20 +12,23 @@ private:
 	bool _isDec = false;
 
 public:
-	RotaryRuler() = default;
+	RotaryRuler() = delete;
 	explicit RotaryRuler(const uint8_t yellowWire, const uint8_t greenWire, const uint16_t _resolution);
 	~RotaryRuler() = default;
 
-	void init();
-	bool isDistanseChanged();
-	void resetMeasurement();
 	void setReverse(const bool value);
 	void setResolution(const uint16_t resolution) { _resolution = resolution; }
 	void setDiameter(const float diameter) { _diameter = diameter; }
+	float getDiameter() { return _diameter; }
+	void resetMeasurement();
+	bool isDistanseChanged();
 	int32_t getEncoderTickCounter() const;
 	float getTuroverCounter() const;
 	float getDistance() const;
 	bool isIncremented();
 	bool isDecremented();
-	
+
+private:
+	void setInterrupts(const bool enable);
+	void calcDirection();
 };
