@@ -93,7 +93,7 @@ void SetReverseMode() {
 	// TODO: Вывод информации на экран
 	const bool isInc = ruler.isIncremented();
 	const bool isDec = ruler.isDecremented();
-	if (ruler.isDistanseChanged() && (ruler.isIncremented() || ruler.isDecremented())) {
+	if (ruler.isDistanseChanged() && (isInc || isDec)) {
 		ruler.setReverse(!ruler.getReverseMode());
 	}
 }
