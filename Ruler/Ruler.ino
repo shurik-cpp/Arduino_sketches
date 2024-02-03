@@ -41,6 +41,9 @@ void EventsTick();
 void EventsReset();
 void MeasureMode();
 void SetReverseMode();
+void SetDiameterMode();
+void SetResolutionMode();
+void SetPrecisionMode();
 void SaveSettings();
 void ClearLcdLineTo(const uint8_t line, const uint8_t index);
 
@@ -79,10 +82,13 @@ void loop() {
 			SetReverseMode();
 		break;
 		case MenuItem::SET_DIAMETER:
+			SetDiameterMode();
 		break;
 		case MenuItem::SET_RESOLUTION:
+			SetResolutionMode();
 		break;
 		case MenuItem::SET_PRECISION:
+			SetPrecisionMode();
 		break;
 		case MenuItem::SAVE_IN_EEPROM:
 			SaveSettings();
@@ -109,18 +115,19 @@ void MeasureMode() {
 	if (isLcdClear) {
 		lcd.clear();
 		isLcdClear = false;
-	}
-
-	static TimeManager dirTimer(static_cast<uint32_t>(Time::SEC_0_5));
-	if (events.isInc || events.isDec) {
-		dirTimer.ResetTimer();
 		lcd.setCursor(0, 0);
 		lcd.print(F("Rotary Ruler"));
-		if (events.isInc) {
+	}
+	const float distance = ruler.getDistance();
+	static float lastDistance = 0;
+	static TimeManager dirTimer(static_cast<uint32_t>(Time::SEC_0_5));
+	if (lastDistance != distance) {
+		dirTimer.ResetTimer();
+		if (lastDistance < distance) {
 		lcd.setCursor(15, 0);
 			lcd.print('>');
 		}
-		else if (events.isDec) {
+		else if (lastDistance > distance) {
 		lcd.setCursor(15, 0);
 			lcd.print('<');
 		}
@@ -131,7 +138,7 @@ void MeasureMode() {
 	}
 
 	if (events.isDistanseChanged) {
-		const float distance = ruler.getDistance();
+		lastDistance = distance;
 		const int posInLine = 15 - GetDigitsCount<float>(distance, deviceSettings.precision) - 3;
 		ClearLcdLineTo(1, posInLine);
 		lcd.print(distance, deviceSettings.precision);
@@ -159,6 +166,18 @@ void SetReverseMode() {
 		ClearLcdLineTo(1, posInLine);
 		lcd.print(deviceSettings.isReverse ? "YES" : "NO");
 	}
+}
+
+void SetDiameterMode() {
+	// TODO: Меню настройки диаметра
+}
+
+inline void SetResolutionMode() {
+	// TODO: Меню настройки количества тиков на один оборот
+}
+
+inline void SetPrecisionMode() {
+	// TODO: Меню настройки количества цифр после запятой
 }
 
 void SaveSettings() {
