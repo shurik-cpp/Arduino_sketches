@@ -1,0 +1,7 @@
+{
+    "port": "COM8",
+    "board": "arduino:avr:uno",
+    "programmer": "avrispmkii",
+    "output": "../build",
+    "sketch": "Ruler.ino"
+}

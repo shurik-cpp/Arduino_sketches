@@ -8,6 +8,8 @@ namespace Setup
 		SENSOR_VCC = 2,
 		ONE_WIRE_PIN = 7,
 		RELAY_PIN = 8,
+		RELAY_TRIAC_PIN = 9,
+		RELAY_TRIAC_PIN_GND = 10,
 		LED = 13
 	};
 	namespace Timers {
@@ -51,8 +53,12 @@ void LedBlink(const Time wait);
 void setup() {
 	Serial.begin(Setup::SERIAL_SPEED);
 	pinMode(Setup::PinsDefine::RELAY_PIN, OUTPUT);
+	pinMode(Setup::PinsDefine::RELAY_TRIAC_PIN, OUTPUT);
+	pinMode(Setup::PinsDefine::RELAY_TRIAC_PIN_GND, OUTPUT);
 	pinMode(Setup::PinsDefine::LED, OUTPUT);
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, HIGH);
+	digitalWrite(Setup::PinsDefine::RELAY_TRIAC_PIN, LOW);
+	digitalWrite(Setup::PinsDefine::RELAY_TRIAC_PIN_GND, LOW);
 	pinMode(Setup::PinsDefine::SENSOR_VCC, OUTPUT);
 	digitalWrite(Setup::PinsDefine::SENSOR_VCC, HIGH);
 
@@ -73,6 +79,7 @@ void setup() {
 		}
 		sensor_research_timer.ResetTimer();
 	}
+	map
 }
 
 void loop() {
@@ -85,6 +92,7 @@ void loop() {
 	}
 	if (is_sensor_enable && sensor_tick_timer.IsReady()) {
 		temperature = sensor.getTempCByIndex(0);
+		//PrintTemperature();
 		sensor.requestTemperatures();
 	}
 
@@ -128,6 +136,7 @@ void loop() {
 		PrintTemperature();
 	}
 	digitalWrite(Setup::PinsDefine::RELAY_PIN, !relay_status);
+	digitalWrite(Setup::PinsDefine::RELAY_TRIAC_PIN, relay_status);
 	
 // Работа светодиода
 	uint8_t led_mode = 0;

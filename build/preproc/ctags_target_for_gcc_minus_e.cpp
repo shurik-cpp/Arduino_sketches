@@ -22,6 +22,14 @@ enum class MenuItem {
  SAVE_IN_EEPROM
 } currentScreen;
 
+struct {
+ bool isDistanseChanged = false;
+ bool isInc = false;
+ bool isDec = false;
+} events;
+
+void EventsTick();
+void EventsReset();
 void ButtonTick();
 void MeasureMode();
 void SetReverseMode();
@@ -33,13 +41,13 @@ void setup() {
  lcd.clear();
  lcd.setCursor(0, 0);
  lcd.print((reinterpret_cast<const __FlashStringHelper *>(
-# 34 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 42 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
           (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 34 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 42 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
           "Rotary Ruler"
-# 34 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 42 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
           ); &__c[0];}))
-# 34 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 42 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
           )));
 
  ruler.setDiameter(diameter_mm);
@@ -49,6 +57,7 @@ void setup() {
 }
 
 void loop() {
+ EventsTick();
  ButtonTick();
  switch (currentScreen) {
   case MenuItem::MEASURE:
@@ -60,23 +69,35 @@ void loop() {
   default:
   break;
  }
+ EventsReset();
 }
 
-void ButtonTick() {
- // TODO: Обработать нажатие кнопки
+inline void EventsTick() {
+ events.isDistanseChanged = ruler.isDistanseChanged();
+ events.isInc = ruler.isIncremented();
+ events.isDec = ruler.isDecremented();
+}
+
+inline void EventsReset() {
+ events.isDistanseChanged = false;
+ events.isInc = false;
+ events.isDec = false;
+}
+
+void ButtonTick()
+{
+    // TODO: Обработать нажатие кнопки
 }
 
 void MeasureMode() {
- const bool isInc = ruler.isIncremented();
- const bool isDec = ruler.isDecremented();
  lcd.setCursor(15, 0);
  static TimeManager dirTimer(static_cast<uint32_t>(Time::SEC_0_5));
- if (isInc || isDec) {
+ if (events.isInc || events.isDec) {
   dirTimer.ResetTimer();
-  if (isInc) {
+  if (events.isInc) {
    lcd.print('>');
   }
-  else if (isDec) {
+  else if (events.isDec) {
    lcd.print('<');
   }
  }
@@ -84,28 +105,28 @@ void MeasureMode() {
   lcd.print(' ');
  }
 
- if (ruler.isDistanseChanged()) {
+ if (events.isDistanseChanged) {
   lcd.setCursor(0, 0);
   lcd.print((reinterpret_cast<const __FlashStringHelper *>(
-# 80 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 101 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
            (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 80 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 101 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
            "Rotary Ruler"
-# 80 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 101 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
            ); &__c[0];}))
-# 80 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 101 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
            )));
 
   lcd.setCursor(0, 1);
   lcd.print(ruler.getDistance(), 2);
   lcd.print((reinterpret_cast<const __FlashStringHelper *>(
-# 84 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 105 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
            (__extension__({static const char __c[] __attribute__((__progmem__)) = (
-# 84 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 105 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
            " mm             "
-# 84 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
+# 105 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino" 3
            ); &__c[0];}))
-# 84 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
+# 105 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
            )));
 
   // Serial.print(ruler.getDistance(), 3);
@@ -116,9 +137,7 @@ void MeasureMode() {
 
 void SetReverseMode() {
  // TODO: Вывод информации на экран
- const bool isInc = ruler.isIncremented();
- const bool isDec = ruler.isDecremented();
- if (ruler.isDistanseChanged() && (isInc || isDec )) {
+ if (events.isInc || events.isDec) {
   ruler.setReverse(!ruler.getReverseMode());
  }
 }

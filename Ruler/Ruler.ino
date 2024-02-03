@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#line 1 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
 #include "TimeManager.h"
 #include "RotaryRuler.h"
 #include "LiquidCrystal_I2C.h"
@@ -35,11 +33,6 @@ void ButtonTick();
 void MeasureMode();
 void SetReverseMode();
 
-#line 36 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
-void setup();
-#line 50 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
-void loop();
-#line 36 "D:\\home_shurik\\Arduino\\Ruler\\Ruler.ino"
 void setup() {
 	// Serial.begin(9600);
 	
@@ -123,4 +116,3 @@ void SetReverseMode() {
 		ruler.setReverse(!ruler.getReverseMode());
 	}
 }
-

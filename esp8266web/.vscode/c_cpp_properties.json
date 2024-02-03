@@ -1,0 +1,56 @@
+{
+    "version": 4,
+    "configurations": [
+        {
+            "name": "Arduino",
+            "compilerPath": "@/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/tools/warnings/default-g++",
+            "compilerArgs": [
+                "-U__STRICT_ANSI__",
+                "-free",
+                "-fipa-pta",
+                "-Werror=return-type",
+                "-mlongcalls",
+                "-mtext-section-literals",
+                "-fno-rtti",
+                "-falign-functions=4",
+                "-std=gnu++17"
+            ],
+            "intelliSenseMode": "gcc-x64",
+            "includePath": [
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/tools/sdk/include",
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/tools/sdk/lwip2/include",
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/cores/esp8266",
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/variants/espino",
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/libraries/ESP8266WiFi/src",
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/libraries/ESP8266WebServer/src",
+                "/home/shurik/Arduino/libraries/esp8266FTPServer"
+            ],
+            "forcedInclude": [
+                "/home/shurik/.arduino15/packages/esp8266/hardware/esp8266/3.1.0/cores/esp8266/Arduino.h"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "defines": [
+                "__ets__",
+                "ICACHE_FLASH",
+                "_GNU_SOURCE",
+                "ESP8266",
+                "MMU_IRAM_SIZE=0x8000",
+                "MMU_ICACHE_SIZE=0x8000",
+                "NONOSDK22x_190703=1",
+                "F_CPU=80000000L",
+                "LWIP_OPEN_SRC",
+                "TCP_MSS=536",
+                "LWIP_FEATURES=1",
+                "LWIP_IPV6=0",
+                "ARDUINO=10816",
+                "ARDUINO_ESP8266_ESPINO_ESP12",
+                "ARDUINO_ARCH_ESP8266",
+                "ARDUINO_BOARD=\"ESP8266_ESPINO_ESP12\"",
+                "ARDUINO_BOARD_ID=\"espino\"",
+                "FLASHMODE_QIO",
+                "USBCON"
+            ]
+        }
+    ]
+}
