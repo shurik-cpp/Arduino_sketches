@@ -2,6 +2,7 @@
 #include "RotaryRuler.h"
 #include "LiquidCrystal_I2C.h"
 #include <EEPROM.h>
+#include <EncButton.h>
 
 const uint8_t ENC_YELLOW_WIRE = 2;
 const uint8_t ENC_GREEN_WIRE = 3;
@@ -12,6 +13,9 @@ RotaryRuler ruler(ENC_YELLOW_WIRE, ENC_GREEN_WIRE);
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
 bool isLcdClear = true;
+
+const uint8_t BUTTON_PIN = 7;
+const uint8_t BUTTON_GND = 8;
 
 enum class MenuItem {
 	MEASURE,
@@ -35,6 +39,8 @@ struct {
 	bool isDistanseChanged = false;
 	bool isInc = false;
 	bool isDec = false;
+	bool isButtonClick = false;
+	bool isButtonHold = false;
 } events;
 
 void EventsTick();
@@ -52,7 +58,9 @@ uint8_t GetDigitsCount(const T number, const uint8_t precision = 0);
 
 void setup() {
 	// Serial.begin(9600);
-	
+	pinMode(BUTTON_GND, OUTPUT);
+	digitalWrite(BUTTON_GND, LOW);
+
 	lcd.begin();
 	lcd.setCursor(0, 0);
 	lcd.print(F("Rotary Ruler"));
@@ -100,6 +108,11 @@ void loop() {
 }
 
 inline void EventsTick() {
+	static Button button(BUTTON_PIN);
+	button.tick();
+
+	events.isButtonClick = button.click();
+	events.isButtonHold = button.hold();
 	events.isDistanseChanged = ruler.isDistanseChanged();
 	events.isInc = ruler.isIncremented();
 	events.isDec = ruler.isDecremented();
@@ -109,6 +122,8 @@ inline void EventsReset() {
 	events.isDistanseChanged = false;
 	events.isInc = false;
 	events.isDec = false;
+	events.isButtonClick = false;
+	events.isButtonHold = false;
 }
 
 void MeasureMode() {
@@ -211,7 +226,7 @@ inline void ClearLcdLineTo(const uint8_t line, const uint8_t index) {
 
 template <typename T>
 inline uint8_t GetDigitsCount(const T number, const uint8_t precision = 0) {
-    int count = 1; // 0 мы всегда выводим
+	int count = 1; // 0 мы всегда выводим
 	if (precision > 0)
 		count += 1 + precision; // "0. + precision" мы всегда выводим
 	if (number < 0) // посчитаем символ '-'
