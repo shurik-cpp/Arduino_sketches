@@ -1,3 +1,4 @@
+#line 1 "D:\\home_shurik\\Arduino\\Ruler\\TimeManager.h"
 #pragma once
 
 enum Time {

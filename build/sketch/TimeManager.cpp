@@ -1,3 +1,4 @@
+#line 1 "D:\\home_shurik\\Arduino\\Ruler\\TimeManager.cpp"
 #include "Arduino.h"
 #include "TimeManager.h"
 

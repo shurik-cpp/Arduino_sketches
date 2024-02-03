@@ -1,10 +1,12 @@
+#line 1 "D:\\home_shurik\\Arduino\\Ruler\\.vscode\\c_cpp_properties.json"
 {
     "version": 4,
     "configurations": [
         {
             "name": "Arduino",
-            "compilerPath": "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/bin/avr-g++",
+            "compilerPath": "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\bin\\avr-g++",
             "compilerArgs": [
+                "-w",
                 "-std=gnu++11",
                 "-fpermissive",
                 "-fno-exceptions",
@@ -15,29 +17,23 @@
             ],
             "intelliSenseMode": "gcc-x64",
             "includePath": [
-                "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/cores/arduino",
-                "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/variants/leonardo",
-                "/home/shurik/develop/arduino-1.8.16/libraries/Keyboard/src",
-                "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/libraries/HID/src",
-                "/home/shurik/Arduino/libraries/EncButton/src",
-                "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/lib/gcc/avr/7.3.0/include",
-                "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/lib/gcc/avr/7.3.0/include-fixed",
-                "/home/shurik/develop/arduino-1.8.16/hardware/tools/avr/avr/include"
+                "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino",
+                "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\variants\\standard",
+                "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\libraries\\Wire\\src",
+                "c:\\users\\admin\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\lib\\gcc\\avr\\7.3.0\\include",
+                "c:\\users\\admin\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\lib\\gcc\\avr\\7.3.0\\include-fixed",
+                "c:\\users\\admin\\appdata\\local\\arduino15\\packages\\arduino\\tools\\avr-gcc\\7.3.0-atmel3.6.1-arduino7\\avr\\include"
             ],
             "forcedInclude": [
-                "/home/shurik/develop/arduino-1.8.16/hardware/arduino/avr/cores/arduino/Arduino.h"
+                "C:\\Users\\Admin\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino\\Arduino.h"
             ],
             "cStandard": "c11",
             "cppStandard": "c++11",
             "defines": [
                 "F_CPU=16000000L",
-                "ARDUINO=10816",
-                "ARDUINO_AVR_LEONARDO",
+                "ARDUINO=10607",
+                "ARDUINO_AVR_UNO",
                 "ARDUINO_ARCH_AVR",
-                "USB_VID=0x2341",
-                "USB_PID=0x8036",
-                "USB_MANUFACTURER=\"Unknown\"",
-                "USB_PRODUCT=\"Arduino Leonardo\"",
                 "__DBL_MIN_EXP__=(-125)",
                 "__HQ_FBIT__=15",
                 "__cpp_attributes=200809",
