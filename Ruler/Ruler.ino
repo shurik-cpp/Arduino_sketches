@@ -4,6 +4,8 @@
 #include <EEPROM.h>
 #include <EncButton.h>
 
+//#define DEBUG_ENABLE
+
 const uint8_t ENC_YELLOW_WIRE = 2;
 const uint8_t ENC_GREEN_WIRE = 3;
 // 1024 импульса энкодера == на 0.5 оборота
@@ -44,7 +46,9 @@ struct {
 	bool isButtonHold = false;
 } events;
 
+#ifdef DEBUG_ENABLE
 void debugEvents();
+#endif
 void EventsTick();
 void EventsHandle();
 void EventsReset();
@@ -61,7 +65,9 @@ template <typename T>
 uint8_t GetDigitsCount(const T number, const uint8_t precision = 0);
 
 void setup() {
+#ifdef DEBUG_ENABLE
 	Serial.begin(9600);
+#endif
 	pinMode(BUTTON_GND, OUTPUT);
 	digitalWrite(BUTTON_GND, LOW);
 
@@ -71,12 +77,16 @@ void setup() {
 
 	uint8_t data = 255;
 	EEPROM.get(0, data);
+#ifdef DEBUG_ENABLE 
 	Serial.print("EEPROM.get(0, data) == ");
 	Serial.println(data);
+#endif
 	const bool isSavedData = (data == 1);
 	if (isSavedData) {
 		EEPROM.get(deviceSettings.index, deviceSettings);
+#ifdef DEBUG_ENABLE 
 		Serial.println("Get deviceSettings from EEPROM");
+#endif
 	}
 
 	ruler.setDiameter(deviceSettings.diameter_mm);
@@ -89,7 +99,9 @@ void setup() {
 
 void loop() {
 	EventsTick();
+#ifdef DEBUG_ENABLE
 	debugEvents();
+#endif
 	switch (currentScreen) {
 		case MenuItem::MEASURE:
 			DrawMeasure();
@@ -115,6 +127,7 @@ void loop() {
 	EventsReset();
 }
 
+#ifdef DEBUG_ENABLE
 inline void debugEvents() {
 	if (events.isButtonClick) {
 		Serial.println("Event: buton click!");
@@ -142,6 +155,7 @@ inline void debugEvents() {
 		Serial.println(static_cast<int>(currentScreen));
 	}
 }
+#endif // DEBUG_ENABLE
 
 inline void EventsTick()
 {
@@ -163,10 +177,14 @@ inline void EventsHandle() {
 			if (events.isButtonHold)
 				currentScreen = GetNextScreen();
 			if (events.isButtonClick) {
+#ifdef DEBUG_ENABLE 
 				Serial.print(ruler.getEncoderTickCounter());
 				Serial.print("-->");
+#endif
 				ruler.resetMeasurement();
+#ifdef DEBUG_ENABLE 
 				Serial.println(ruler.getEncoderTickCounter());
+#endif
 			}
 		break;
 		case MenuItem::SET_REVERSE:
