@@ -1,8 +1,0 @@
-#line 1 "D:\\home_shurik\\Arduino\\Ruler\\.vscode\\arduino.json"
-{
-    "port": "COM8",
-    "board": "arduino:avr:uno",
-    "programmer": "avrispmkii",
-    "output": "../build",
-    "sketch": "Ruler.ino"
-}
