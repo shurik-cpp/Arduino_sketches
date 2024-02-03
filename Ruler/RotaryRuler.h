@@ -13,7 +13,7 @@ private:
 
 public:
 	RotaryRuler() = delete;
-	explicit RotaryRuler(const uint8_t yellowWire, const uint8_t greenWire, const uint16_t _resolution);
+	explicit RotaryRuler(const uint8_t yellowWire, const uint8_t greenWire, const uint16_t _resolution = 2048);
 	~RotaryRuler() = default;
 
 	void setReverse(const bool value);
