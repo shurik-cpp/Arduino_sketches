@@ -12,7 +12,6 @@ constexpr uint16_t ENC_RESOLUTION = 1024 * 2;
 RotaryRuler ruler(ENC_YELLOW_WIRE, ENC_GREEN_WIRE);
 
 LiquidCrystal_I2C lcd(0x3F, 16, 2);
-bool isLcdClear = true;
 
 const uint8_t BUTTON_PIN = 7;
 const uint8_t BUTTON_GND = 8;
@@ -23,7 +22,8 @@ enum class MenuItem {
 	SET_DIAMETER,
 	SET_RESOLUTION,
 	SET_PRECISION,
-	SAVE_IN_EEPROM
+	SAVE_IN_EEPROM,
+	SAVED
 } currentScreen;
 
 struct Settings {
@@ -36,6 +36,7 @@ struct Settings {
 
 Settings deviceSettings;
 struct {
+	bool isNewScreen = false;
 	bool isDistanseChanged = false;
 	bool isInc = false;
 	bool isDec = false;
@@ -43,21 +44,24 @@ struct {
 	bool isButtonHold = false;
 } events;
 
+void debugEvents();
 void EventsTick();
+void EventsHandle();
 void EventsReset();
-void MeasureMode();
-void SetReverseMode();
-void SetDiameterMode();
-void SetResolutionMode();
-void SetPrecisionMode();
+void DrawMeasure();
+void DrawSetReverse();
+void DrawSetDiameter();
+void DrawSetResolution();
+void DrawSetPrecision();
 void SaveSettings();
+MenuItem GetNextScreen();
 void ClearLcdLineTo(const uint8_t line, const uint8_t index);
 
 template <typename T>
 uint8_t GetDigitsCount(const T number, const uint8_t precision = 0);
 
 void setup() {
-	// Serial.begin(9600);
+	Serial.begin(9600);
 	pinMode(BUTTON_GND, OUTPUT);
 	digitalWrite(BUTTON_GND, LOW);
 
@@ -65,38 +69,42 @@ void setup() {
 	lcd.setCursor(0, 0);
 	lcd.print(F("Rotary Ruler"));
 
-	uint8_t data = 0;
+	uint8_t data = 255;
 	EEPROM.get(0, data);
+	Serial.print("EEPROM.get(0, data) == ");
+	Serial.println(data);
 	const bool isSavedData = (data == 1);
 	if (isSavedData) {
 		EEPROM.get(deviceSettings.index, deviceSettings);
+		Serial.println("Get deviceSettings from EEPROM");
 	}
 
 	ruler.setDiameter(deviceSettings.diameter_mm);
 	ruler.setReverse(deviceSettings.isReverse);
 	ruler.setResolution(deviceSettings.enc_resolution);
 
-	isLcdClear = true;
+	events.isNewScreen = true;
 	currentScreen = MenuItem::MEASURE;
 }
 
 void loop() {
 	EventsTick();
+	debugEvents();
 	switch (currentScreen) {
 		case MenuItem::MEASURE:
-			MeasureMode();
+			DrawMeasure();
 		break;
 		case MenuItem::SET_REVERSE:
-			SetReverseMode();
+			DrawSetReverse();
 		break;
 		case MenuItem::SET_DIAMETER:
-			SetDiameterMode();
+			DrawSetDiameter();
 		break;
 		case MenuItem::SET_RESOLUTION:
-			SetResolutionMode();
+			DrawSetResolution();
 		break;
 		case MenuItem::SET_PRECISION:
-			SetPrecisionMode();
+			DrawSetPrecision();
 		break;
 		case MenuItem::SAVE_IN_EEPROM:
 			SaveSettings();
@@ -107,8 +115,38 @@ void loop() {
 	EventsReset();
 }
 
-inline void EventsTick() {
-	static Button button(BUTTON_PIN);
+inline void debugEvents() {
+	if (events.isButtonClick) {
+		Serial.println("Event: buton click!");
+		Serial.print("currentScreen == ");
+		Serial.println(static_cast<int>(currentScreen));
+	}
+	if (events.isButtonHold) {
+		Serial.println("Event: buton hold!");
+		Serial.print("currentScreen == ");
+		Serial.println(static_cast<int>(currentScreen));
+	}
+	if (events.isInc) {
+		Serial.println("Event: ruler Inc!");
+		Serial.print("currentScreen == ");
+		Serial.println(static_cast<int>(currentScreen));
+	}
+	if (events.isDec) {
+		Serial.println("Event: ruler Dec!");
+		Serial.print("currentScreen == ");
+		Serial.println(static_cast<int>(currentScreen));
+	}
+	if (events.isNewScreen) {
+		Serial.println("Event: newScreen!");
+		Serial.print("currentScreen == ");
+		Serial.println(static_cast<int>(currentScreen));
+	}
+}
+
+inline void EventsTick()
+{
+    static Button button(BUTTON_PIN);
+	button.setHoldTimeout(Time::SEC_1);
 	button.tick();
 
 	events.isButtonClick = button.click();
@@ -116,9 +154,86 @@ inline void EventsTick() {
 	events.isDistanseChanged = ruler.isDistanseChanged();
 	events.isInc = ruler.isIncremented();
 	events.isDec = ruler.isDecremented();
+	EventsHandle();
+}
+
+inline void EventsHandle() {
+	switch (currentScreen) {
+		case MenuItem::MEASURE:
+			if (events.isButtonHold)
+				currentScreen = GetNextScreen();
+			if (events.isButtonClick) {
+				Serial.print(ruler.getEncoderTickCounter());
+				Serial.print("-->");
+				ruler.resetMeasurement();
+				Serial.println(ruler.getEncoderTickCounter());
+			}
+		break;
+		case MenuItem::SET_REVERSE:
+			if (events.isInc || events.isDec) {
+				deviceSettings.isReverse = !deviceSettings.isReverse;
+				ruler.setReverse(deviceSettings.isReverse);
+			}
+			if (events.isButtonHold)
+				currentScreen = MenuItem::SAVE_IN_EEPROM;
+			else if (events.isButtonClick) {
+				currentScreen = GetNextScreen();
+			}
+		break;
+		case MenuItem::SET_DIAMETER:
+			if (events.isInc) 
+				deviceSettings.diameter_mm = deviceSettings.diameter_mm >= 500 ? 500 : deviceSettings.diameter_mm + 1;
+			else if (events.isDec)
+				deviceSettings.diameter_mm = deviceSettings.diameter_mm == 0 ? 0 : deviceSettings.diameter_mm - 1;
+			ruler.setDiameter(deviceSettings.diameter_mm);
+			if (events.isButtonHold)
+				currentScreen = MenuItem::SAVE_IN_EEPROM;
+			else if (events.isButtonClick) {
+				currentScreen = GetNextScreen();
+			}
+		break;
+		case MenuItem::SET_RESOLUTION:
+			if (events.isInc)
+				deviceSettings.enc_resolution++;
+			else if (events.isDec)
+				deviceSettings.enc_resolution--;
+			ruler.setResolution(deviceSettings.enc_resolution);
+			if (events.isButtonHold)
+				currentScreen = MenuItem::SAVE_IN_EEPROM;
+			else if (events.isButtonClick) {
+				currentScreen = GetNextScreen();
+			}
+		break;
+		case MenuItem::SET_PRECISION:
+			if (events.isInc)
+				deviceSettings.precision = deviceSettings.precision >= 5 ? 5 : deviceSettings.precision + 1;
+			else if (events.isDec)
+				deviceSettings.precision = deviceSettings.precision == 0 ? 0 : deviceSettings.precision - 1;
+				if (events.isButtonHold)
+				currentScreen = MenuItem::SAVE_IN_EEPROM;
+			else if (events.isButtonClick) {
+				currentScreen = GetNextScreen();
+			}
+		break;
+		default:
+			currentScreen = GetNextScreen();
+		break;
+	}
+}
+
+inline MenuItem GetNextScreen() {
+	events.isNewScreen = true;
+	if (currentScreen == MenuItem::SAVED)
+		return MenuItem::MEASURE;
+	if (currentScreen == MenuItem::SET_PRECISION)
+		return MenuItem::SET_REVERSE;
+	
+	const uint8_t screen = static_cast<uint8_t>(currentScreen) + 1;
+	return static_cast<MenuItem>(screen);
 }
 
 inline void EventsReset() {
+	events.isNewScreen = false;
 	events.isDistanseChanged = false;
 	events.isInc = false;
 	events.isDec = false;
@@ -126,10 +241,9 @@ inline void EventsReset() {
 	events.isButtonHold = false;
 }
 
-void MeasureMode() {
-	if (isLcdClear) {
+void DrawMeasure() {
+	if (events.isNewScreen) {
 		lcd.clear();
-		isLcdClear = false;
 		lcd.setCursor(0, 0);
 		lcd.print(F("Rotary Ruler"));
 	}
@@ -152,67 +266,121 @@ void MeasureMode() {
 		lcd.print(' ');
 	}
 
-	if (events.isDistanseChanged) {
+	if (events.isDistanseChanged || events.isNewScreen) {
 		lastDistance = distance;
-		const int posInLine = 15 - GetDigitsCount<float>(distance, deviceSettings.precision) - 3;
-		ClearLcdLineTo(1, posInLine);
-		lcd.print(distance, deviceSettings.precision);
+		uint8_t posInLine = 0;
+		if (deviceSettings.precision > 0) {
+			posInLine = 15 - GetDigitsCount<float>(distance, deviceSettings.precision) - 3;
+			ClearLcdLineTo(1, posInLine);
+			lcd.print(distance, deviceSettings.precision);
+		}
+		else {
+			posInLine = 15 - GetDigitsCount<int>(static_cast<int>(distance), deviceSettings.precision) - 3;
+			ClearLcdLineTo(1, posInLine);
+			lcd.print(static_cast<int>(distance));
+		}
 		lcd.print(F(" mm"));
 	}
 }
 
-void SetReverseMode() {
-	if (isLcdClear) {
+void DrawSetReverse() {
+	auto PrintValue = []() {
+		const uint8_t charsCount = deviceSettings.isReverse ? 3 : 2;
+		const int posInLine = 15 - charsCount;
+		ClearLcdLineTo(1, posInLine);
+		lcd.print(deviceSettings.isReverse ? "YES" : "NO");
+	};
+
+	if (events.isNewScreen) {
 		lcd.clear();
-		isLcdClear = false;
 		lcd.setCursor(0, 0);
 		lcd.print(F("Reverse ruler:"));
-		const uint8_t charCount = deviceSettings.isReverse ? 3 : 2;
-		const int posInLine = 15 - charCount;
-		lcd.setCursor(posInLine, 1);
-		lcd.print(deviceSettings.isReverse ? "YES" : "NO");
+		PrintValue();
 	}
 	
 	if (events.isInc || events.isDec) {
-		deviceSettings.isReverse = !deviceSettings.isReverse;
-		ruler.setReverse(deviceSettings.isReverse);
-		const uint8_t charCount = deviceSettings.isReverse ? 3 : 2;
-		const int posInLine = 15 - charCount;
-		ClearLcdLineTo(1, posInLine);
-		lcd.print(deviceSettings.isReverse ? "YES" : "NO");
+		PrintValue();
 	}
 }
 
-void SetDiameterMode() {
-	// TODO: Меню настройки диаметра
+void DrawSetDiameter() {
+	auto PrintValue = []() {
+		const int posInLine = 15 - GetDigitsCount<uint16_t>(deviceSettings.diameter_mm) - 3;
+		ClearLcdLineTo(1, posInLine);
+		lcd.print(deviceSettings.diameter_mm);
+		lcd.print(F(" mm"));
+	};
+
+	if (events.isNewScreen) {
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print(F("Set diameter:"));
+		PrintValue();
+	}
+
+	if (events.isInc || events.isDec) {
+		PrintValue();
+	}
 }
 
-inline void SetResolutionMode() {
-	// TODO: Меню настройки количества тиков на один оборот
+inline void DrawSetResolution() {
+	auto PrintValue = []() {
+		const int posInLine = 15 - GetDigitsCount<uint16_t>(deviceSettings.enc_resolution) - 6;
+		ClearLcdLineTo(1, posInLine);
+		lcd.print(deviceSettings.enc_resolution);
+		lcd.print(F(" ticks"));
+	};
+
+	if (events.isNewScreen) {
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print(F("Set resolution:"));
+		PrintValue();
+	}
+
+	if (events.isInc || events.isDec) {
+		PrintValue();
+	}
 }
 
-inline void SetPrecisionMode() {
-	// TODO: Меню настройки количества цифр после запятой
+inline void DrawSetPrecision() {
+	auto PrintValue = []() {
+		int posInLine = 15 - deviceSettings.precision - 1;
+		if (deviceSettings.precision > 0)
+			posInLine--;
+		ClearLcdLineTo(1, posInLine);
+		lcd.print('0');
+		if (deviceSettings.precision > 0)
+			lcd.print('.');
+		for (uint8_t i = 0; i < deviceSettings.precision; ++i)
+			lcd.print('0');
+	};
+
+	if (events.isNewScreen) {
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		lcd.print(F("Set precision:"));
+		PrintValue();
+	}
+
+	if (events.isInc || events.isDec) {
+		PrintValue();
+	}
 }
 
 void SaveSettings() {
-	static bool newSaving = true;
-	static TimeManager showMessageTimer(static_cast<uint32_t>(Time::SEC_1));
-	if (newSaving) {
-		const uint8_t isSave = 0;
-		EEPROM.put(0, isSave);
-		EEPROM.put(deviceSettings.index, deviceSettings);
-		showMessageTimer.ResetTimer();
-		newSaving = false;
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		lcd.print(F("Settings"));
-		lcd.setCursor(0, 1);
-		lcd.print(F("saved"));
-	}
-	if (showMessageTimer.IsReady()) {
-		currentScreen = MenuItem::MEASURE;
-		newSaving = true;
+	const uint8_t isSave = 1;
+	EEPROM.put(0, isSave);
+	EEPROM.put(deviceSettings.index, deviceSettings);
+	lcd.clear();
+	lcd.setCursor(0, 0);
+	lcd.print(F("Settings"));
+	lcd.setCursor(15 - 5, 1);
+	lcd.print(F("saved"));
+
+	TimeManager showMessageTimer(static_cast<uint32_t>(Time::SEC_1));
+	while (!showMessageTimer.IsReady()) {
+		currentScreen = MenuItem::SAVED;
 		ruler.resetMeasurement();
 	}
 }

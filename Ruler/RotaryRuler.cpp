@@ -89,7 +89,6 @@ void RotaryRuler::calcDirection() {
 
 void RotaryRuler::resetMeasurement() {
 	setInterrupts(false);
-	_lastEncoderTickCounter = 0;
     RullerInterrupt::encoderTickCounter = 0;
 	setInterrupts(true);
 }
